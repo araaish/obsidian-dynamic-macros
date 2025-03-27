@@ -2,6 +2,7 @@ import { Plugin } from 'obsidian';
 import { MacroPluginSettingTab, MacroPluginSettings, DEFAULT_SETTINGS } from './settings';
 import { MacroStore } from 'src/data/macroStore';
 import { SettingsMacroStore } from 'src/data/settingsMacroStore';
+import { addCommands } from 'src/commands';
 
 // TODO: Remember to rename these classes and interfaces!
 
@@ -14,6 +15,8 @@ export default class MacroPlugin extends Plugin {
 		await this.loadSettings();
 
 		await this.initializeMacroStore();
+
+		addCommands(this);
 
 		this.addSettingTab(new MacroPluginSettingTab(this.app, this));
 

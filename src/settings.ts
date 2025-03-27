@@ -1,7 +1,7 @@
 import { PluginSettingTab, App, Setting} from 'obsidian';
 import { MacroPlugin } from './plugin'; // Import the main plugin class for saving/loading settings
 
-type MacroStorage = 'settings' | 'file' | 'indexeddb';
+type MacroStorage = 'settings' | 'file'| 'indexeddb';
 
 export interface MacroPluginSettings {
     macroFormat: string;        // The macro format (e.g., "{{}}", "%%")

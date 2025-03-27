@@ -3,6 +3,7 @@
 	"name": "Dynamic Macros",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
+	"main": "src/plugin.ts",
 	"description": "Replace user-defined macros dynamically in both preview and editor mode without modifying the underlying markdown file.",
 	"author": "araaish",
 	"authorUrl": "https://github.com/araaish/obsidian-dynamic-macros",
