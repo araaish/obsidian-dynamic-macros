@@ -3,9 +3,7 @@ import { MacroPluginSettingTab, MacroPluginSettings, DEFAULT_SETTINGS } from './
 import { MacroStore } from 'src/data/macroStore';
 import { SettingsMacroStore } from 'src/data/settingsMacroStore';
 import { addCommands } from 'src/commands';
-
-// TODO: Remember to rename these classes and interfaces!
-
+import { applyMacrosToRenderedElement } from 'src/processor';
 
 export default class MacroPlugin extends Plugin {
 	settings: MacroPluginSettings;
@@ -19,14 +17,38 @@ export default class MacroPlugin extends Plugin {
 		addCommands(this);
 
 		this.addSettingTab(new MacroPluginSettingTab(this.app, this));
+			
+		this.registerMarkdownPostProcessor(async (el, ctx) => {
+			if (!this.settings.editorMacroUpdate) return;
 
+			// Determine the format: use 'custom' format if selected
+			let macroFormat = this.settings.macroFormat;
+			console.log('macroFormat: ', macroFormat)
+
+			if (macroFormat === "custom") {
+				macroFormat = this.settings.customMacroFormat; // Use the regex string from the custom format
+				if (!macroFormat) {
+					console.error("Custom macro format is empty");
+					return;
+				}
+			}
+
+			const macros = await this.macroStore.getAllMacros();
+
+			await applyMacrosToRenderedElement(
+				el,
+				ctx,
+				macros,
+				macroFormat,  // Pass the final format (either custom regex or default format)
+			);
+		});
 	}
 
 	onunload() {
 
 	}
 
-	// TODO: update to handle other storage methods
+	// NOTE: update to handle other storage methods
 	async loadSettings() {
         try {
 			const data = await this.loadData();
@@ -37,7 +59,7 @@ export default class MacroPlugin extends Plugin {
         }
     }
 
-	// TODO: same as loadSettings
+	// NOTE: same as loadSettings
     async saveSettings() {
         await this.saveData({
 			settings: this.settings,
