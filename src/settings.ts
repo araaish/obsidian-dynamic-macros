@@ -1,13 +1,14 @@
 import { PluginSettingTab, App, Setting} from 'obsidian';
-import { MacroPlugin } from './plugin'; // Import the main plugin class for saving/loading settings
+import MacroPlugin from 'src/plugin'; // Import the main plugin class for saving/loading settings
 
 type MacroStorage = 'settings' | 'file'| 'indexeddb';
 
 export interface MacroPluginSettings {
-    macroFormat: string;        // The macro format (e.g., "{{}}", "%%")
+    macroFormat: string;        // The macro format (e.g., "{{}}", "<<>>")
     editorMacroUpdate: string;  // Option to enable/disable macro updating in the editor
     macroStorage: MacroStorage;  // storage method
 	macroFilePath?: string;		// Optional: Path if file-based storage is used
+	customMacroFormat?: string;	// Optional: Regex for custom format provided by user
 }
 
 export const DEFAULT_SETTINGS: MacroPluginSettings = {
@@ -33,11 +34,11 @@ export class MacroPluginSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Macro Format")
-            .setDesc("Choose the format for macro keys (e.g., {{MACRO_KEY}} or %%MACRO_KEY%%).")
+            .setDesc("Choose the format for macro keys (e.g., {{MACRO_KEY}} or <<MACRO_KEY>>).")
             .addDropdown((dropdown) => 
                 dropdown
                     .addOption("{{}}", "{{MACRO_KEY}}")
-                    .addOption("%%", "%%MACRO_KEY%%")
+                    .addOption("<<>>", "<<MACRO_KEY>>")
 					.addOption('custom', 'Custom (Enter Regex)')
                     .setValue(this.plugin.settings.macroFormat)
                     .onChange(async (value) => {
@@ -51,7 +52,7 @@ export class MacroPluginSettingTab extends PluginSettingTab {
         new Setting(containerEl)
             .setName("Update Macros in Editor")
             .setDesc("Choose whether macros should be rendered in the editor.")
-            .addDropdown((dropdown) => 
+            .addDropdown((dropdown) => {
                 dropdown
                     .addOption("enabled", "Enabled")
                     .addOption("disabled", "Disabled")
@@ -59,8 +60,14 @@ export class MacroPluginSettingTab extends PluginSettingTab {
                     .onChange(async (value) => {
                         this.plugin.settings.editorMacroUpdate = value;
                         await this.plugin.saveSettings();
-                    })
-            );
+                    });
+				// Disable the "enabled" option
+				const selectEl = dropdown.selectEl;
+				const optionToDisable = selectEl.querySelector('option[value="enabled"]') as HTMLOptionElement | null;
+				if (optionToDisable) {
+					optionToDisable.disabled = true;
+				}
+            });
 
 		new Setting(containerEl)
 			.setName('Storage Location')
@@ -71,8 +78,8 @@ export class MacroPluginSettingTab extends PluginSettingTab {
 					.addOption('file', 'JSON File')
 					.addOption('indexeddb', 'IndexedDB')
 					.setValue(this.plugin.settings.macroStorage)
-					.onChange(async (value) => {
-						this.plugin.settings.macroStorage = value;
+					.onChange(async (value: MacroStorage) => {
+						this.plugin.settings.macroStorage = value
 						await this.plugin.saveSettings();
 					})
 			);

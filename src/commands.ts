@@ -1,10 +1,10 @@
-import { Plugin } from 'obsidian';
+import { Notice } from 'obsidian';
+import MacroPlugin from 'src/plugin';
 import MacroModal from 'src/ui/macroModal';
-import { MacroStore } from 'src/data/macroStore';
 import { promptUserForInput } from 'src/utils';
 
-export function addCommands(plugin: Plugin) {
-	macroStore = plugin.macroStore;
+export function addCommands(plugin: MacroPlugin) {
+	let macroStore = plugin.getMacroStore();
 
 	plugin.addCommand({
 		id: 'create-macro',

@@ -1,5 +1,5 @@
 import { App, Modal, Setting, Notice } from 'obsidian';
-import { MacroStore } from 'src/data/macroStore';
+import MacroStore from 'src/data/macroStore';
 
 export default class MacroModal extends Modal {
 	private macroStore: MacroStore;

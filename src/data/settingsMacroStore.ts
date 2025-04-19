@@ -1,15 +1,15 @@
-import { Plugin } from 'obsidian';
-import { MacroPluginSettings } from 'src/settings';
+import MacroPlugin from 'src/plugin';
+import MacroStore from 'src/data/macroStore';
 
 interface MacroData {
 	[key: string]: string;
 }
 
 export class SettingsMacroStore implements MacroStore {
-	private plugin: Plugin;
+	private plugin: MacroPlugin;
 	private macros: MacroData;
 
-	constructor(plugin: Plugin) {
+	constructor(plugin: MacroPlugin) {
 		this.plugin = plugin;
 		this.loadMacros();
 	}
@@ -53,4 +53,3 @@ export class SettingsMacroStore implements MacroStore {
         return false;
     }
 }
-

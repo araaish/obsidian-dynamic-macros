@@ -1,6 +1,6 @@
-import { Plugin } from 'obsidian';
-import { MacroPluginSettingTab, MacroPluginSettings, DEFAULT_SETTINGS } from './settings';
-import { MacroStore } from 'src/data/macroStore';
+import { MarkdownPostProcessorContext, Plugin } from 'obsidian';
+import { MacroPluginSettingTab, MacroPluginSettings, DEFAULT_SETTINGS } from 'src/settings';
+import MacroStore from 'src/data/macroStore';
 import { SettingsMacroStore } from 'src/data/settingsMacroStore';
 import { addCommands } from 'src/commands';
 import { applyMacrosToRenderedElement } from 'src/processor';
@@ -17,36 +17,24 @@ export default class MacroPlugin extends Plugin {
 		addCommands(this);
 
 		this.addSettingTab(new MacroPluginSettingTab(this.app, this));
-			
+
 		this.registerMarkdownPostProcessor(async (el, ctx) => {
-			if (!this.settings.editorMacroUpdate) return;
-
-			// Determine the format: use 'custom' format if selected
-			let macroFormat = this.settings.macroFormat;
-			console.log('macroFormat: ', macroFormat)
-
-			if (macroFormat === "custom") {
-				macroFormat = this.settings.customMacroFormat; // Use the regex string from the custom format
-				if (!macroFormat) {
-					console.error("Custom macro format is empty");
-					return;
-				}
-			}
-
+			// Get macros from the MacroStore (adjust as per your actual setup)
 			const macros = await this.macroStore.getAllMacros();
-
+			
+			// Call the function to apply macros to the rendered markdown
 			await applyMacrosToRenderedElement(
-				el,
-				ctx,
-				macros,
-				macroFormat,  // Pass the final format (either custom regex or default format)
+			  el,
+			  macros,
+			  this.settings.macroFormat,
+			  this.app, // Pass the app instance
+			  this.getSourcePath(ctx), // Optionally, pass the source path (adjust as needed)
+			  this, // This is the parent component (usually `this` in a plugin)
+			  this.settings.customMacroFormat
 			);
-		});
+		  });
 	}
 
-	onunload() {
-
-	}
 
 	// NOTE: update to handle other storage methods
 	async loadSettings() {
@@ -75,6 +63,15 @@ export default class MacroPlugin extends Plugin {
 		} else {
 			this.macroStore = new SettingsMacroStore(this);
 		}
+	}
+
+	getMacroStore() {
+		return this.macroStore;
+	}
+
+	getSourcePath(ctx: MarkdownPostProcessorContext): string {
+		// Access the source path from the context (e.g., ctx.sourcePath)
+		return ctx.sourcePath || "unknown.md"; // Fallback to "unknown.md" if not available
 	}
 }
 

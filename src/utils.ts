@@ -12,36 +12,40 @@ export function getAllMatches(
   text: string,
   macros: Record<string, string>,
   macroFormat: string,
+  customMacroFormat?: string
 ): { key: string; value: string; matchText: string; index: number }[] {
   const matches: { key: string; value: string; matchText: string; index: number }[] = [];
 
-  // If we have a custom regex, treat it as a regex pattern
-  if (macroFormat.startsWith("/") && macroFormat.endsWith("/")) {
+  if (macroFormat === "custom" && customMacroFormat) {
     try {
-      const regex = new RegExp(macroFormat.slice(1, -1), "g");
+      const regex = new RegExp(customMacroFormat, "g");
       let match: RegExpExecArray | null;
       while ((match = regex.exec(text)) !== null) {
+        const matchedKey = match[1] || match[0];
         matches.push({
-          key: match[0],
-          value: macros[match[0]] || "", // Match value for the macro
+          key: matchedKey,
+          value: macros[matchedKey] ?? "",
           matchText: match[0],
-          index: match.index
+          index: match.index,
         });
       }
     } catch (e) {
       console.error("Invalid custom regex:", e);
     }
   } else {
-    // Otherwise, treat macroFormat as a plain string template (e.g., {{KEY}})
+    const wrap = macroFormat === '{{}}' ? (key: string) => `{{${key}}}` :
+                 macroFormat === '<<>>'   ? (key: string) => `<<${key}>>` :
+                 (key: string) => key;
+
     for (const [key, value] of Object.entries(macros)) {
-      const wrappedKey = macroFormat.replace("KEY", key);
+      const wrappedKey = wrap(key);
       let idx = text.indexOf(wrappedKey);
       while (idx !== -1) {
         matches.push({
           key,
           value,
           matchText: wrappedKey,
-          index: idx
+          index: idx,
         });
         idx = text.indexOf(wrappedKey, idx + wrappedKey.length);
       }
