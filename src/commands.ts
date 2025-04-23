@@ -9,7 +9,7 @@ export function addCommands(plugin: MacroPlugin) {
 
 	plugin.addCommand({
 		id: 'create-macro',
-		name: 'Create New Macro',
+		name: 'Create Macro',
 		callback: () => {
 			new MacroModal(plugin.app, macroStore).open();
 		}
@@ -17,7 +17,7 @@ export function addCommands(plugin: MacroPlugin) {
 
 	plugin.addCommand({
 		id: 'list-macros',
-		name: 'List Existing Macros',
+		name: 'List Macros',
 		callback: async () => {
 			const macros = await macroStore.getAllMacros();
 			if (Object.keys(macros).length == 0) {
