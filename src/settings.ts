@@ -4,7 +4,7 @@ import MacroPlugin from 'src/plugin'; // Import the main plugin class for saving
 type MacroStorage = 'settings' | 'file'| 'indexeddb';
 
 export interface MacroPluginSettings {
-    macroFormat: string;        // The macro format (e.g., "{{}}", "<<>>")
+    macroFormat: string;        // The macro format (e.g., "{{}}", "@@@@")
     editorMacroUpdate: string;  // Option to enable/disable macro updating in the editor
     macroStorage: MacroStorage;  // storage method
 	macroFilePath?: string;		// Optional: Path if file-based storage is used
@@ -38,7 +38,7 @@ export class MacroPluginSettingTab extends PluginSettingTab {
             .addDropdown((dropdown) => 
                 dropdown
                     .addOption("{{}}", "{{MACRO_KEY}}")
-                    .addOption("<<>>", "<<MACRO_KEY>>")
+                    .addOption("@@@@", "@@MACRO_KEY@@")
 					.addOption('custom', 'Custom (Enter Regex)')
                     .setValue(this.plugin.settings.macroFormat)
                     .onChange(async (value) => {
@@ -72,7 +72,7 @@ export class MacroPluginSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName('Storage Location')
 			.setDesc('Choose where to store macros.')
-			.addDropdown((dropdown) =>
+			.addDropdown((dropdown) => {
 				dropdown
 					.addOption('settings', 'Plugin Settings (Default)')
 					.addOption('file', 'JSON File')
@@ -81,8 +81,15 @@ export class MacroPluginSettingTab extends PluginSettingTab {
 					.onChange(async (value: MacroStorage) => {
 						this.plugin.settings.macroStorage = value
 						await this.plugin.saveSettings();
-					})
-			);
+					});
+				const selectEl = dropdown.selectEl;
+				for (const value of ['file', 'indexeddb']) {
+					let optionToDisable = selectEl.querySelector(`option[value=${value}]`) as HTMLOptionElement | null;
+					if (optionToDisable) {
+						optionToDisable.disabled = true;
+					}
+				}
+			});
 
 		if (this.plugin.settings.macroStorage === 'file') {
 			new Setting(containerEl)

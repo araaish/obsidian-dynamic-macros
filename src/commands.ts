@@ -1,6 +1,7 @@
 import { Notice } from 'obsidian';
 import MacroPlugin from 'src/plugin';
 import MacroModal from 'src/ui/macroModal';
+import MacroListModal from 'src/ui/macroListModal';
 import { promptUserForInput } from 'src/utils';
 
 export function addCommands(plugin: MacroPlugin) {
@@ -23,11 +24,7 @@ export function addCommands(plugin: MacroPlugin) {
 				new Notice('No macros found.');
 				return;
 			} else {
-				const macroList = Object.entries(macros)
-					.map(([key, value]) => `- **${key}** -> ${value}`)
-					.join('\n');
-				// TODO: instead of notice, use MacroListModal
-				new Notice(`Available Macros: \n${macroList}`);
+				new MacroListModal(app, macros).open();
 			}
 		}
 	});

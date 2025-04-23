@@ -1,5 +1,5 @@
-import { MarkdownPostProcessorContext, MarkdownRenderer, App, Component } from 'obsidian';
-import { getAllMatches} from 'src/utils';
+import { MarkdownPostProcessorContext, App, Component } from 'obsidian';
+import { getAllMatches, renderInlineMarkdown } from 'src/utils';
 
 export async function applyMacrosToRenderedElement(
   el: HTMLElement,
@@ -35,8 +35,8 @@ export async function applyMacrosToRenderedElement(
         fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
       }
 
-      const html = await renderMarkdownToElement(match.value, app, sourcePath, component);
-      fragment.appendChild(html);
+      const rendered = await renderInlineMarkdown(match.value, app, sourcePath, component);
+      fragment.appendChild(rendered);
 
       lastIndex = match.index + match.matchText.length;
     }
@@ -49,16 +49,3 @@ export async function applyMacrosToRenderedElement(
   }
 }
 
-// Render markdown content as HTML inside a temporary div
-async function renderMarkdownToElement(
-  markdown: string,
-  app: App,
-  sourcePath: string,
-  component: Component
-): Promise<DocumentFragment> {
-  const tempDiv = createDiv();
-  await MarkdownRenderer.render(app, markdown, tempDiv, sourcePath, component);
-  const fragment = document.createDocumentFragment();
-  Array.from(tempDiv.childNodes).forEach((node) => fragment.appendChild(node));
-  return fragment;
-}
