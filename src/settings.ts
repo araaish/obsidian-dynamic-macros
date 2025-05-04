@@ -1,4 +1,4 @@
-import { PluginSettingTab, App, Setting } from 'obsidian';
+import { Notice, PluginSettingTab, App, Setting } from 'obsidian';
 import MacroPlugin from 'src/plugin'; // Import the main plugin class for saving/loading settings
 
 type MacroStorage = 'settings' | 'file';
@@ -7,7 +7,6 @@ export interface MacroPluginSettings {
 	macroFormat: string;        // The macro format (e.g., "{{}}", "@@@@")
 	editorMacroUpdate: string;  // Option to enable/disable macro updating in the editor
 	macroStorage: MacroStorage;  // storage method
-	macroFilePath?: string;		// Optional: Path if file-based storage is used
 	customMacroFormat?: string;	// Optional: Regex for custom format provided by user
 }
 
@@ -60,24 +59,12 @@ export class MacroPluginSettingTab extends PluginSettingTab {
 					.onChange(async (value: MacroStorage) => {
 						this.plugin.settings.macroStorage = value
 						await this.plugin.saveSettings();
-						this.display();
+						this.plugin.switchMacroStore();
+						console.log('switched macroStore');
+						console.log('new store = ', this.plugin.settings.macroStorage);
 					});
 			});
 
-		if (this.plugin.settings.macroStorage === 'file') {
-			new Setting(containerEl)
-				.setName('Macro File Path')
-				.setDesc('Path to the md file that contains saved macros')
-				.addText((text) =>
-					text
-						.setPlaceholder('_macros.md')
-						.setValue(this.plugin.settings.macroFilePath || '_macros.md')
-						.onChange(async (value) => {
-							this.plugin.settings.macroFilePath = value;
-							await this.plugin.saveSettings();
-						})
-				);
-		}
 
 		const customRegexSetting = new Setting(containerEl)
 			.setName("Custom Macro Format")

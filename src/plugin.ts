@@ -66,6 +66,15 @@ export default class MacroPlugin extends Plugin {
 		} else {
 			this.macroStore = new SettingsMacroStore(this);
 		}
+		await this.macroStore.init();
+		console.log('initialized macroStore');
+	}
+
+	async switchMacroStore() {
+		const macros = await this.macroStore.getAllMacros();
+		console.log('got old macros: ', macros);
+		await this.initializeMacroStore();
+		this.macroStore.saveMacros(macros);
 	}
 
 	getMacroStore() {

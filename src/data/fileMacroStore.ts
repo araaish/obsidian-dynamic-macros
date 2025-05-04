@@ -6,9 +6,8 @@ interface MacroData {
 	[key: string]: string;
 }
 
+const FILEPATH = '_macros.md';
 
-// TODO: debug loading macros from file using logs - logs the loading macro steps
-// TODO: handle switching between macroStore types - copy macros over to new store type
 export class FileMacroStore implements MacroStore {
 
 	private plugin: MacroPlugin;
@@ -16,11 +15,14 @@ export class FileMacroStore implements MacroStore {
 
 	constructor(plugin: MacroPlugin) {
 		this.plugin = plugin;
-		this.loadMacros();
+	}
+
+	async init(): Promise<void> {
+		await this.loadMacros();
 	}
 
 	private get filePath(): string {
-		return normalizePath(this.plugin.settings.macroFilePath || '_macros.md');
+		return normalizePath(FILEPATH);
 	}
 
 	async loadMacros(): Promise<void> {
@@ -38,6 +40,7 @@ export class FileMacroStore implements MacroStore {
 				this.macros = {};
 			}
 		} else {
+			console.log('file was not of TFile type');
 			try {
 				this.plugin.app.vault.create(this.filePath, '{}');
 				this.macros = {};
@@ -49,16 +52,24 @@ export class FileMacroStore implements MacroStore {
 		}
 	}
 
-	async saveMacros(): Promise<void> {
+	async saveMacros(macros?: Record<string, string>): Promise<void> {
+		if (macros) {
+			this.macros = macros;
+			console.log('saving macros from memory');
+		}
+		console.log('saving macros to filepath: ', this.filePath);
 		const curFile = this.plugin.app.vault.getAbstractFileByPath(this.filePath);
+		console.log('curFile: ', curFile);
 		const content = JSON.stringify(this.macros, null, 2);
+		console.log('content: ', content);
 
 		try {
-			// overwrite file with content
 			if (curFile instanceof TFile) {
 				await this.plugin.app.vault.modify(curFile, content);
+				console.log('successfully modified macro file');
 			} else {
 				await this.plugin.app.vault.create(this.filePath, content);
+				console.log('successfully created new macrofile');
 			}
 		} catch (e) {
 			console.error(`Failed to save macro file: ${e}`);
