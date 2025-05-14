@@ -24,7 +24,7 @@ export function addCommands(plugin: MacroPlugin) {
 				new Notice('No macros found.');
 				return;
 			} else {
-				new MacroListModal(app, macros).open();
+				new MacroListModal(this.app, macros).open();
 			}
 		}
 	});
