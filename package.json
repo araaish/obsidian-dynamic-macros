@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-dynamic-macros",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "Replace user-defined macros dynamically in both preview and editor mode without modifying the underlying markdown file.",
 	"main": "main.js",
 	"scripts": {

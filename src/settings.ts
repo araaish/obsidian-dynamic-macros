@@ -60,8 +60,6 @@ export class MacroPluginSettingTab extends PluginSettingTab {
 						this.plugin.settings.macroStorage = value
 						await this.plugin.saveSettings();
 						this.plugin.switchMacroStore();
-						console.log('switched macroStore');
-						console.log('new store = ', this.plugin.settings.macroStorage);
 					});
 			});
 

@@ -22,14 +22,12 @@ export class SettingsMacroStore implements MacroStore {
 			const data = await this.plugin.loadData();
 			this.macros = data?.macros || {};
 		} catch (error) {
-			console.error('Error loading macros. Using empty set.');
 			this.macros = {};
 		}
 	}
 
 	async saveMacros(macros?: Record<string, string>) {
 		if (macros) {
-			console.log('saving macros from memory');
 			this.macros = macros
 		}
 		await this.plugin.saveData({
