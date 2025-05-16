@@ -1,73 +1,52 @@
-import { PluginSettingTab, App, Setting} from 'obsidian';
+import { Notice, PluginSettingTab, App, Setting } from 'obsidian';
 import MacroPlugin from 'src/plugin'; // Import the main plugin class for saving/loading settings
 
-type MacroStorage = 'settings' | 'file'| 'indexeddb';
+type MacroStorage = 'settings' | 'file';
 
 export interface MacroPluginSettings {
-    macroFormat: string;        // The macro format (e.g., "{{}}", "@@@@")
-    editorMacroUpdate: string;  // Option to enable/disable macro updating in the editor
-    macroStorage: MacroStorage;  // storage method
-	macroFilePath?: string;		// Optional: Path if file-based storage is used
+	macroFormat: string;        // The macro format (e.g., "{{}}", "@@@@")
+	editorMacroUpdate: string;  // Option to enable/disable macro updating in the editor
+	macroStorage: MacroStorage;  // storage method
 	customMacroFormat?: string;	// Optional: Regex for custom format provided by user
 }
 
 export const DEFAULT_SETTINGS: MacroPluginSettings = {
-    macroFormat: '{{}}',
-    editorMacroUpdate: 'disabled',
+	macroFormat: '{{}}',
+	editorMacroUpdate: 'disabled',
 	macroStorage: 'settings'
 };
 
 export class MacroPluginSettingTab extends PluginSettingTab {
-    private plugin: MacroPlugin;
+	private plugin: MacroPlugin;
 
-    constructor(app: App, plugin: MacroPlugin) {
-        super(app, plugin);
-        this.plugin = plugin;
-    }
+	constructor(app: App, plugin: MacroPlugin) {
+		super(app, plugin);
+		this.plugin = plugin;
+	}
 
-    display(): void {
-        const { containerEl } = this;
+	display(): void {
+		const { containerEl } = this;
 
-        containerEl.empty();
+		containerEl.empty();
 
-        containerEl.createEl("h2", { text: "Macro Plugin Settings" });
+		containerEl.createEl("h2", { text: "Macro Plugin Settings" });
 
-        new Setting(containerEl)
-            .setName("Macro Format")
-            .setDesc("Choose the format for macro keys (e.g., {{MACRO_KEY}} or <<MACRO_KEY>>).")
-            .addDropdown((dropdown) => 
-                dropdown
-                    .addOption("{{}}", "{{MACRO_KEY}}")
-                    .addOption("@@@@", "@@MACRO_KEY@@")
+		new Setting(containerEl)
+			.setName("Macro Format")
+			.setDesc("Choose the format for macro keys (e.g., {{MACRO_KEY}} or <<MACRO_KEY>>).")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("{{}}", "{{MACRO_KEY}}")
+					.addOption("@@@@", "@@MACRO_KEY@@")
 					.addOption('custom', 'Custom (Enter Regex)')
-                    .setValue(this.plugin.settings.macroFormat)
-                    .onChange(async (value) => {
-                        this.plugin.settings.macroFormat = value;
-                        await this.plugin.saveSettings();
-						
-						customRegexSetting.setDisabled(value !== 'custom')
-                    })
-            );
+					.setValue(this.plugin.settings.macroFormat)
+					.onChange(async (value) => {
+						this.plugin.settings.macroFormat = value;
+						await this.plugin.saveSettings();
 
-        new Setting(containerEl)
-            .setName("Update Macros in Editor")
-            .setDesc("Choose whether macros should be rendered in the editor.")
-            .addDropdown((dropdown) => {
-                dropdown
-                    .addOption("enabled", "Enabled")
-                    .addOption("disabled", "Disabled")
-                    .setValue(this.plugin.settings.editorMacroUpdate)
-                    .onChange(async (value) => {
-                        this.plugin.settings.editorMacroUpdate = value;
-                        await this.plugin.saveSettings();
-                    });
-				// Disable the "enabled" option
-				const selectEl = dropdown.selectEl;
-				const optionToDisable = selectEl.querySelector('option[value="enabled"]') as HTMLOptionElement | null;
-				if (optionToDisable) {
-					optionToDisable.disabled = true;
-				}
-            });
+						customRegexSetting.setDisabled(value !== 'custom')
+					})
+			);
 
 		new Setting(containerEl)
 			.setName('Storage Location')
@@ -75,36 +54,15 @@ export class MacroPluginSettingTab extends PluginSettingTab {
 			.addDropdown((dropdown) => {
 				dropdown
 					.addOption('settings', 'Plugin Settings (Default)')
-					.addOption('file', 'JSON File')
-					.addOption('indexeddb', 'IndexedDB')
+					.addOption('file', 'File')
 					.setValue(this.plugin.settings.macroStorage)
 					.onChange(async (value: MacroStorage) => {
 						this.plugin.settings.macroStorage = value
 						await this.plugin.saveSettings();
+						this.plugin.switchMacroStore();
 					});
-				const selectEl = dropdown.selectEl;
-				for (const value of ['file', 'indexeddb']) {
-					let optionToDisable = selectEl.querySelector(`option[value=${value}]`) as HTMLOptionElement | null;
-					if (optionToDisable) {
-						optionToDisable.disabled = true;
-					}
-				}
 			});
 
-		if (this.plugin.settings.macroStorage === 'file') {
-			new Setting(containerEl)
-				.setName('Macro File Path')
-				.setDesc('Path to the macro JSON file.')
-				.addText((text) =>
-					text
-						.setPlaceholder('macros.json')
-						.setValue(this.plugin.settings.macroFilePath || 'macros.json')
-						.onChange(async (value) => {
-							this.plugin.settings.macroFilePath = value;
-							await this.plugin.saveSettings();
-						})
-				);
-		}
 
 		const customRegexSetting = new Setting(containerEl)
 			.setName("Custom Macro Format")

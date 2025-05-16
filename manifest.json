@@ -1,7 +1,7 @@
 {
 	"id": "dynamic-macros",
 	"name": "Dynamic Macros",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"minAppVersion": "0.15.0",
 	"main": "src/plugin.ts",
 	"description": "Replace user-defined macros dynamically in both preview and editor mode without modifying the underlying markdown file.",
